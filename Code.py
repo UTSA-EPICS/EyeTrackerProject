@@ -6,7 +6,7 @@ from math import hypot
 
 # Initialize variables
 keyboard = np.zeros((600, 1000, 3), np.uint8)
-url = 'http://192.168.86.212/cam-lo.jpg'
+url = 'http://192.168.1.171/cam-lo.jpg'
 cv2.namedWindow("live Cam Testing", cv2.WINDOW_AUTOSIZE)
 
 # Create VideoCapture object (though not used directly here)
@@ -15,7 +15,6 @@ cap = cv2.VideoCapture(url)
 # Initialize facial feature detector
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
-
 
 def draw_menu():
     rows, cols, _ = keyboard.shape
@@ -27,10 +26,8 @@ def draw_menu():
     cv2.putText(keyboard, "UP", (430, 150), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
     cv2.putText(keyboard, "Down", (380, 500), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
 
-
 def midpoint(p1, p2):
     return int((p1.x + p2.x) / 2), int((p1.y + p2.y) / 2)
-
 
 def get_gaze_ratio(eye_points, facial_landmarks):
     left_eye_region = np.array([(facial_landmarks.part(eye_points[0]).x, facial_landmarks.part(eye_points[0]).y),
@@ -69,7 +66,6 @@ def get_gaze_ratio(eye_points, facial_landmarks):
         gaze_ratio = left_side_white / right_side_white
     return gaze_ratio
 
-
 # Function to get eye contours
 def eyes_contour_points(facial_landmarks):
     left_eye = []
@@ -85,7 +81,6 @@ def eyes_contour_points(facial_landmarks):
     left_eye = np.array(left_eye, np.int32)
     right_eye = np.array(right_eye, np.int32)
     return left_eye, right_eye
-
 
 # Function to calculate blinking ratio (EAR)
 def get_blinking_ratio(eye_points, facial_landmarks):
@@ -108,7 +103,6 @@ def get_blinking_ratio(eye_points, facial_landmarks):
     ear = (A + B) / (2.0 * C)
 
     return ear
-
 
 # Main loop
 while True:
@@ -156,11 +150,16 @@ while True:
             gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
 
             print("Gaze ratio:", gaze_ratio)
+            print("Blik ratio", blinking_ratio)
+            # Perform                        actions based on gaze ratio (not shown in full code for brevity)
 
-            # Perform actions based on gaze ratio (not shown in full code for brevity)
-            if gaze_ratio <= 1.3:  # Example logic for gaze-based selection
+            if (blinking_ratio <= 0.20):
+                print("Looking Down")
+            elif (blinking_ratio > 0.30):
+                print("Looking Up")
+            elif gaze_ratio <= 1.3:  # Example logic for gaze-based selection
                 print("Looking right.")
-            else:
+            elif (gaze_ratio > 1.3):
                 print("Looking left.")
 
         # Display the frame with annotations

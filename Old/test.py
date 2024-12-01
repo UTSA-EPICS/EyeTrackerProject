@@ -6,7 +6,7 @@ import time
 import urllib.request
 
 # Load sound for blink
-sound = pyglet.media.load("Sounds/blink_FNZ3zVv.mp3", streaming=False)
+sound = pyglet.media.load("../Sounds/blink_FNZ3zVv.mp3", streaming=False)
 
 # IP camera URL
 ip_camera_url = "http://192.168.86.212/cam-hi.jpg"

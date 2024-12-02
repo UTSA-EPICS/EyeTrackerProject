@@ -20,10 +20,10 @@ servo_angle_3 = 90
 servo_angle_4 = 90
 
 #light pins
-light_pin1 = 11
-light_pin2 = 19
-light_pin3 = 21
-light_pin4 = 23
+light_pin1 = 11 # left
+light_pin2 = 19 # right
+light_pin3 = 21 # up
+light_pin4 = 23 # down
 
 # Initialize GPIO for servo control
 GPIO.setmode(GPIO.BOARD)
@@ -48,7 +48,6 @@ GPIO.setup(light_pin4, GPIO.OUT, initial=GPIO.HIGH)
 
 
 def set_servo_angle1(angle):
-    """Set the servo to a specific angle using software PWM."""
     duty_cycle = min_duty_cycle + (max_duty_cycle - min_duty_cycle) * (angle / 180.0)
     GPIO.output(servo_pin1, GPIO.HIGH)
 
@@ -91,7 +90,7 @@ def set_servo_angle4(angle):
 
 # Initialize variables
 keyboard = np.zeros((600, 1000, 3), np.uint8)
-url = 'http://192.168.1.171/cam-lo.jpg'
+url = 'http://192.168.98.171/cam-lo.jpg'
 cv2.namedWindow("live Cam Testing", cv2.WINDOW_AUTOSIZE)
 
 # Create VideoCapture object (though not used directly here)
@@ -173,10 +172,7 @@ def get_blinking_ratio(eye_points, facial_landmarks):
 
 
 
-set_servo_angle1(servo_angle_1)
-set_servo_angle2(servo_angle_2)
-set_servo_angle3(servo_angle_3)
-set_servo_angle4(servo_angle_4)
+
 
 
 
@@ -210,95 +206,65 @@ try:
                 gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
 
                 print("Gaze ratio:", gaze_ratio)
+                print("Blink ratioqa:", blinking_ratio)
+
             if (blinking_ratio <= 0.20):
                 print("Looking Down")
                 GPIO.output(light_pin4, GPIO.LOW)
-
                 GPIO.output(light_pin1, GPIO.HIGH)
                 GPIO.output(light_pin2, GPIO.HIGH)
                 GPIO.output(light_pin3, GPIO.HIGH)
 
-                if (servo_angle_4 < 70):    # 90
-                    servo_angle_4 += 1  # down
-                    set_servo_angle4(servo_angle_4)
-                    if (servo_angle_2 < 150):
-                        servo_angle_2 += 1  # right
-                        set_servo_angle2(servo_angle_2)
-                    if (servo_angle_1 > 30):
-                        servo_angle_1 -= 1  # left
-                        set_servo_angle1(servo_angle_1)
-                    if (servo_angle_3 < 150):
-                        servo_angle_3 -= 1  # up
-                        set_servo_angle3(servo_angle_3)
-                        time.sleep(1)
+                GPIO.output(servo_pin4, GPIO.LOW)
+                GPIO.output(servo_pin1, GPIO.HIGH)
+                GPIO.output(servo_pin2, GPIO.HIGH)
+                GPIO.output(servo_pin3, GPIO.HIGH)
+
+                time.sleep(0.5)
+
 
             elif(blinking_ratio > 0.30):
                 print("Looking Up")
-                GPIO.output(light_pin3, GPIO.LOW)
-
-                GPIO.output(light_pin1, GPIO.HIGH)
+                GPIO.output(light_pin3, GPIO.HIGH)
+                GPIO.output(light_pin1, GPIO.LOW)
                 GPIO.output(light_pin2, GPIO.HIGH)
                 GPIO.output(light_pin4, GPIO.HIGH)
 
-                if (servo_angle_3 < 70):    # 90
-                    servo_angle_3 -= 1  # up
-                    set_servo_angle3(servo_angle_3)
-                    if (servo_angle_2 < 150):
-                        servo_angle_2 += 1  # right
-                        set_servo_angle2(servo_angle_2)
-                    if (servo_angle_1 > 30):
-                        servo_angle_1 -= 1  # left
-                        set_servo_angle1(servo_angle_1)
-                    if (servo_angle_4 < 150):
-                        servo_angle_4 += 1  # down
-                        set_servo_angle4(servo_angle_4)
-                        time.sleep(1)
+                GPIO.output(servo_pin3, GPIO.LOW)
+                GPIO.output(servo_pin1, GPIO.HIGH)
+                GPIO.output(servo_pin2, GPIO.HIGH)
+                GPIO.output(servo_pin4, GPIO.HIGH)
+
+                time.sleep(0.5)
+
 
             elif gaze_ratio <= 1.3:
                 print("Looking right.")
                 GPIO.output(light_pin2, GPIO.LOW)
-
                 GPIO.output(light_pin1, GPIO.HIGH)
                 GPIO.output(light_pin3, GPIO.HIGH)
                 GPIO.output(light_pin4, GPIO.HIGH)
 
-                if (servo_angle_2 < 70):    # 90
-                    servo_angle_2 -= 1  # right
-                    set_servo_angle2(servo_angle_2)
-                    if (servo_angle_1 > 30):
-                        servo_angle_1 -= 1  # left
-                        set_servo_angle1(servo_angle_1)
-                    if (servo_angle_3 < 150):
-                        servo_angle_3 += 1  # up
-                        set_servo_angle3(servo_angle_3)
-                    if (servo_angle_4 < 150):
-                        servo_angle_4 += 1  # down
-                        set_servo_angle4(servo_angle_4)
-                    time.sleep(1)
+                GPIO.output(servo_pin2, GPIO.LOW)
+                GPIO.output(servo_pin1, GPIO.HIGH)
+                GPIO.output(servo_pin3, GPIO.HIGH)
+                GPIO.output(servo_pin4, GPIO.HIGH)
 
+                time.sleep(0.5)
 
-                    set_servo_angle2(servo_angle_2)
-            elif (gaze_ratio > 1.3):
                 print("Looking left.")
-                GPIO.output(light_pin1, GPIO.LOW)
-
+                GPIO.output(light_pin1, GPIO.HIGH)
                 GPIO.output(light_pin2, GPIO.HIGH)
-                GPIO.output(light_pin3, GPIO.HIGH)
+                GPIO.output(light_pin3, GPIO.LOW)
                 GPIO.output(light_pin4, GPIO.HIGH)
 
-                if (servo_angle_1 < 70):    # 90
-                    servo_angle_1 += 1  # left
-                    set_servo_angle1(servo_angle_1)
-                    if (servo_angle_2 < 150):
-                        servo_angle_2 += 1  # right
-                        set_servo_angle2(servo_angle_2)
-                    if (servo_angle_3 < 150):
-                        servo_angle_3 += 1  # up
-                        set_servo_angle3(servo_angle_3)
-                    if (servo_angle_4 < 150):
-                        servo_angle_4 += 1  # down
-                        set_servo_angle4(servo_angle_4)
-                        time.sleep(1)
+                GPIO.output(servo_pin1, GPIO.LOW)
+                GPIO.output(servo_pin2, GPIO.HIGH)
+                GPIO.output(servo_pin3, GPIO.HIGH)
+                GPIO.output(servo_pin4, GPIO.HIGH)
+
+                time.sleep(0.5)
+
 
             cv2.imshow('live Cam Testing', img)
             key = cv2.waitKey(5)

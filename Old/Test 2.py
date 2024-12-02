@@ -5,16 +5,13 @@ from math import hypot
 import pyglet
 import time
 
-#rtsp://192.168.86.212:554/stream
-
-
 # Load sounds
-sound = pyglet.media.load("Sounds/blink_FNZ3zVv.mp3", streaming=False)
-left_sound = pyglet.media.load("Sounds/timer_beep.mp3", streaming=False)
-right_sound = pyglet.media.load("Sounds/short-beep.mp3", streaming=False)
+sound = pyglet.media.load("../Sounds/blink_FNZ3zVv.mp3", streaming=False)
+left_sound = pyglet.media.load("../Sounds/timer_beep.mp3", streaming=False)
+right_sound = pyglet.media.load("../Sounds/short-beep.mp3", streaming=False)
 
 # Selects the webcam, and makes and empty screen for the board.
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture("http://192.168.1.116/cam-hi.jpg")
 board = np.zeros((300, 1400), np.uint8)
 board[:] = 255
 
@@ -105,12 +102,10 @@ def draw_letters(letter_index, text, letter_light):
 def draw_menu():
     rows, cols, _ = keyboard.shape
     th_lines = 4 # thickness lines
-    cv2.line(keyboard, (int(cols/2) - int(th_lines), 0),(int(cols/2) - int(th_lines/2), rows),
+    cv2.line(keyboard, (int(cols/2) - int(th_lines/2), 0),(int(cols/2) - int(th_lines/2), rows),
              (51, 51, 51), th_lines)
     cv2.putText(keyboard, "LEFT", (80, 300), font, 6, (255, 255, 255), 5)
     cv2.putText(keyboard, "RIGHT", (80 + int(cols/2), 300), font, 6, (255, 255, 255), 5)
-    cv2.putText(keyboard, "UP", (430, 150), font, 6, (255, 255, 255), 5)
-    cv2.putText(keyboard, "Down", (380, 500), font, 6, (255, 255, 255), 5)
 
 def midpoint(p1 ,p2):
     return int((p1.x + p2.x)/2), int((p1.y + p2.y)/2)
@@ -200,10 +195,11 @@ keyboard_selection_frames = 0
 
 # Main code
 while True:
-    # Reads 1 frame from the camera
-    _, frame = cap.read(1)
-    # Resizes the window for the camera to be smaller, so it is easier on the computations
-    frame = cv2.resize(frame, None, fx=0.3, fy=0.3)
+    ret, frame = cap.read()
+    if not ret or frame is None:
+        print("Failed to capture frame. Check video source.")
+        continue
+    frame = cv2.resize(frame, None, fx=1, fy=1)
     rows, cols, _ = frame.shape
     keyboard[:] = (26, 26, 26)
     frames += 1
@@ -277,7 +273,7 @@ while True:
 
         else:
             # Detect the blinking to select the key that is lighting up
-            if blinking_ratio > 4.0:
+            if blinking_ratio > 5:
                 # cv2.putText(frame, "BLINKING", (50, 150), font, 4, (255, 0, 0), thickness=3)
                 blinking_frames += 1
                 frames -= 1

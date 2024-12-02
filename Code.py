@@ -3,6 +3,91 @@ import urllib.request
 import numpy as np
 import dlib
 from math import hypot
+import Jetson.GPIO as GPIO
+import time
+
+# Servo GPIO pin setup
+servo_pin1 = 12  # GPIO pin connected to the servo (BCM numbering)
+servo_pin2 = 33  # GPIO pin connected to the servo (BCM numbering)
+servo_pin3 = 35  # GPIO pin connected to the servo (BCM numbering)
+servo_pin4 = 37  # GPIO pin connected to the servo (BCM numbering)
+
+min_duty_cycle = 2.5  # Min duty cycle for 0 degrees
+max_duty_cycle = 12.5  # Max duty cycle for 180 degrees
+servo_angle_1 = 90
+servo_angle_2 = 90
+servo_angle_3 = 90
+servo_angle_4 = 90
+
+#light pins
+light_pin1 = 11
+light_pin2 = 19
+light_pin3 = 21
+light_pin4 = 23
+
+# Initialize GPIO for servo control
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(servo_pin1, GPIO.OUT)
+GPIO.setup(servo_pin2, GPIO.OUT)
+GPIO.setup(servo_pin3, GPIO.OUT)
+GPIO.setup(servo_pin4, GPIO.OUT)
+
+
+GPIO.setup(light_pin1, GPIO.OUT)
+GPIO.setup(light_pin2, GPIO.OUT)
+GPIO.setup(light_pin3, GPIO.OUT)
+GPIO.setup(light_pin4, GPIO.OUT)
+
+
+
+# Initialize GPIO for LIGHT control
+GPIO.setup(light_pin1, GPIO.OUT, initial=GPIO.HIGH)
+GPIO.setup(light_pin2, GPIO.OUT, initial=GPIO.HIGH)
+GPIO.setup(light_pin3, GPIO.OUT, initial=GPIO.HIGH)
+GPIO.setup(light_pin4, GPIO.OUT, initial=GPIO.HIGH)
+
+
+def set_servo_angle1(angle):
+    """Set the servo to a specific angle using software PWM."""
+    duty_cycle = min_duty_cycle + (max_duty_cycle - min_duty_cycle) * (angle / 180.0)
+    GPIO.output(servo_pin1, GPIO.HIGH)
+
+
+    time.sleep(duty_cycle / 1000.0)  # Active high for duty cycle duration
+    GPIO.output(servo_pin1, GPIO.LOW)
+    time.sleep((20 - duty_cycle) / 1000.0)  # Complete 20 ms period
+
+def set_servo_angle2(angle):
+    """Set the servo to a specific angle using software PWM."""
+    duty_cycle = min_duty_cycle + (max_duty_cycle - min_duty_cycle) * (angle / 180.0)
+
+    GPIO.output(servo_pin2, GPIO.HIGH)
+
+
+    time.sleep(duty_cycle / 1000.0)  # Active high for duty cycle duration
+    GPIO.output(servo_pin2, GPIO.LOW)
+    time.sleep((20 - duty_cycle) / 1000.0)  # Complete 20 ms period
+
+def set_servo_angle3(angle):
+    """Set the servo to a specific angle using software PWM."""
+    duty_cycle = min_duty_cycle + (max_duty_cycle - min_duty_cycle) * (angle / 180.0)
+
+    GPIO.output(servo_pin3, GPIO.HIGH)
+
+
+    time.sleep(duty_cycle / 1000.0)  # Active high for duty cycle duration
+    GPIO.output(servo_pin3, GPIO.LOW)
+    time.sleep((20 - duty_cycle) / 1000.0)  # Complete 20 ms period
+
+def set_servo_angle4(angle):
+    """Set the servo to a specific angle using software PWM."""
+    duty_cycle = min_duty_cycle + (max_duty_cycle - min_duty_cycle) * (angle / 180.0)
+    GPIO.output(servo_pin4, GPIO.HIGH)
+
+    time.sleep(duty_cycle / 1000.0)  # Active high for duty cycle duration
+    GPIO.output(servo_pin4, GPIO.LOW)
+    time.sleep((20 - duty_cycle) / 1000.0)  # Complete 20 ms period
+
 
 # Initialize variables
 keyboard = np.zeros((600, 1000, 3), np.uint8)
@@ -15,16 +100,6 @@ cap = cv2.VideoCapture(url)
 # Initialize facial feature detector
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
-
-def draw_menu():
-    rows, cols, _ = keyboard.shape
-    th_lines = 4  # thickness lines
-    cv2.line(keyboard, (int(cols / 2) - int(th_lines), 0), (int(cols / 2) - int(th_lines / 2), rows),
-             (51, 51, 51), th_lines)
-    cv2.putText(keyboard, "LEFT", (80, 300), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
-    cv2.putText(keyboard, "RIGHT", (80 + int(cols / 2), 300), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
-    cv2.putText(keyboard, "UP", (430, 150), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
-    cv2.putText(keyboard, "Down", (380, 500), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 5)
 
 def midpoint(p1, p2):
     return int((p1.x + p2.x) / 2), int((p1.y + p2.y) / 2)
@@ -84,95 +159,157 @@ def eyes_contour_points(facial_landmarks):
 
 # Function to calculate blinking ratio (EAR)
 def get_blinking_ratio(eye_points, facial_landmarks):
-    # Get the coordinates of the eye landmarks
     eye = []
     for n in eye_points:
         x = facial_landmarks.part(n).x
         y = facial_landmarks.part(n).y
         eye.append([x, y])
-
-    # Convert to numpy array
     eye = np.array(eye, np.int32)
-
-    # Compute the vertical and horizontal distances
-    A = hypot(eye[1][0] - eye[5][0], eye[1][1] - eye[5][1])  # Vertical distance (top-bottom)
-    B = hypot(eye[2][0] - eye[4][0], eye[2][1] - eye[4][1])  # Vertical distance (left-right)
-    C = hypot(eye[0][0] - eye[3][0], eye[0][1] - eye[3][1])  # Horizontal distance (left-right)
-
-    # Calculate the eye aspect ratio (EAR)
+    A = hypot(eye[1][0] - eye[5][0], eye[1][1] - eye[5][1])
+    B = hypot(eye[2][0] - eye[4][0], eye[2][1] - eye[4][1])
+    C = hypot(eye[0][0] - eye[3][0], eye[0][1] - eye[3][1])
     ear = (A + B) / (2.0 * C)
-
     return ear
 
+
+
+set_servo_angle1(servo_angle_1)
+set_servo_angle2(servo_angle_2)
+set_servo_angle3(servo_angle_3)
+set_servo_angle4(servo_angle_4)
+
+
+
 # Main loop
-while True:
-    try:
-        # Fetch the image from the URL
-        img_resp = urllib.request.urlopen(url)
-        imgnp = np.array(bytearray(img_resp.read()), dtype=np.uint8)
+try:
+    while True:
+        try:
+            img_resp = urllib.request.urlopen(url)
+            imgnp = np.array(bytearray(img_resp.read()), dtype=np.uint8)
+            img = cv2.imdecode(imgnp, cv2.IMREAD_COLOR)
 
+            if img is None:
+                print("Failed to decode image.")
+                continue
 
-        # Decode the image into an OpenCV image
-        img = cv2.imdecode(imgnp, cv2.IMREAD_COLOR)
+            rows, cols, _ = img.shape
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img[rows - 50: rows, 0: cols] = (255, 255, 255)
 
-        # Check if the image was decoded successfully
-        if img is None:
-            print("Failed to decode image.")
-            continue
+            faces = detector(gray)
+            for face in faces:
+                landmarks = predictor(gray, face)
+                left_eye, right_eye = eyes_contour_points(landmarks)
 
-        # Ensure the image is valid, now you can access 'shape'
-        rows, cols, _ = img.shape
+                left_eye_ratio = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
+                right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
+                blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
 
-        # Convert to grayscale for face detection
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                gaze_ratio_left_eye = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks)
+                gaze_ratio_right_eye = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks)
+                gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
 
-        # Optionally draw a white space for the loading bar at the bottom of the frame
-        img[rows - 50: rows, 0: cols] = (255, 255, 255)
-
-        # Detect faces in the grayscale image
-        faces = detector(gray)
-        for face in faces:
-            landmarks = predictor(gray, face)
-            left_eye, right_eye = eyes_contour_points(landmarks)
-
-            # Detect blinking ratio for both eyes
-            left_eye_ratio = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
-            right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
-            blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
-
-            # Draw contours around the eyes
-            cv2.polylines(img, [left_eye], True, (0, 0, 255), 2)
-            cv2.polylines(img, [right_eye], True, (0, 0, 255), 2)
-
-            # Detect the gaze ratio and select keyboard menu (if needed)
-            gaze_ratio_left_eye = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks)
-            gaze_ratio_right_eye = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks)
-            gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
-
-            print("Gaze ratio:", gaze_ratio)
-            print("Blik ratio", blinking_ratio)
-            # Perform                        actions based on gaze ratio (not shown in full code for brevity)
-
+                print("Gaze ratio:", gaze_ratio)
             if (blinking_ratio <= 0.20):
                 print("Looking Down")
-            elif (blinking_ratio > 0.30):
+                GPIO.output(light_pin4, GPIO.LOW)
+
+                GPIO.output(light_pin1, GPIO.HIGH)
+                GPIO.output(light_pin2, GPIO.HIGH)
+                GPIO.output(light_pin3, GPIO.HIGH)
+
+                if (servo_angle_4 < 70):    # 90
+                    servo_angle_4 += 1  # down
+                    set_servo_angle4(servo_angle_4)
+                    if (servo_angle_2 < 150):
+                        servo_angle_2 += 1  # right
+                        set_servo_angle2(servo_angle_2)
+                    if (servo_angle_1 > 30):
+                        servo_angle_1 -= 1  # left
+                        set_servo_angle1(servo_angle_1)
+                    if (servo_angle_3 < 150):
+                        servo_angle_3 -= 1  # up
+                        set_servo_angle3(servo_angle_3)
+                        time.sleep(1)
+
+            elif(blinking_ratio > 0.30):
                 print("Looking Up")
-            elif gaze_ratio <= 1.3:  # Example logic for gaze-based selection
+                GPIO.output(light_pin3, GPIO.LOW)
+
+                GPIO.output(light_pin1, GPIO.HIGH)
+                GPIO.output(light_pin2, GPIO.HIGH)
+                GPIO.output(light_pin4, GPIO.HIGH)
+
+                if (servo_angle_3 < 70):    # 90
+                    servo_angle_3 -= 1  # up
+                    set_servo_angle3(servo_angle_3)
+                    if (servo_angle_2 < 150):
+                        servo_angle_2 += 1  # right
+                        set_servo_angle2(servo_angle_2)
+                    if (servo_angle_1 > 30):
+                        servo_angle_1 -= 1  # left
+                        set_servo_angle1(servo_angle_1)
+                    if (servo_angle_4 < 150):
+                        servo_angle_4 += 1  # down
+                        set_servo_angle4(servo_angle_4)
+                        time.sleep(1)
+
+            elif gaze_ratio <= 1.3:
                 print("Looking right.")
+                GPIO.output(light_pin2, GPIO.LOW)
+
+                GPIO.output(light_pin1, GPIO.HIGH)
+                GPIO.output(light_pin3, GPIO.HIGH)
+                GPIO.output(light_pin4, GPIO.HIGH)
+
+                if (servo_angle_2 < 70):    # 90
+                    servo_angle_2 -= 1  # right
+                    set_servo_angle2(servo_angle_2)
+                    if (servo_angle_1 > 30):
+                        servo_angle_1 -= 1  # left
+                        set_servo_angle1(servo_angle_1)
+                    if (servo_angle_3 < 150):
+                        servo_angle_3 += 1  # up
+                        set_servo_angle3(servo_angle_3)
+                    if (servo_angle_4 < 150):
+                        servo_angle_4 += 1  # down
+                        set_servo_angle4(servo_angle_4)
+                    time.sleep(1)
+
+
+                    set_servo_angle2(servo_angle_2)
             elif (gaze_ratio > 1.3):
                 print("Looking left.")
+                GPIO.output(light_pin1, GPIO.LOW)
 
-        # Display the frame with annotations
-        cv2.imshow('live Cam Testing', img)
+                GPIO.output(light_pin2, GPIO.HIGH)
+                GPIO.output(light_pin3, GPIO.HIGH)
+                GPIO.output(light_pin4, GPIO.HIGH)
 
+                if (servo_angle_1 < 70):    # 90
+                    servo_angle_1 += 1  # left
+                    set_servo_angle1(servo_angle_1)
+                    if (servo_angle_2 < 150):
+                        servo_angle_2 += 1  # right
+                        set_servo_angle2(servo_angle_2)
+                    if (servo_angle_3 < 150):
+                        servo_angle_3 += 1  # up
+                        set_servo_angle3(servo_angle_3)
+                    if (servo_angle_4 < 150):
+                        servo_angle_4 += 1  # down
+                        set_servo_angle4(servo_angle_4)
+                        time.sleep(1)
 
-        # Wait for 'q' key press to quit
-        key = cv2.waitKey(5)
-        if key == ord('q'):
-            break
+            cv2.imshow('live Cam Testing', img)
+            key = cv2.waitKey(5)
+            if key == ord('q'):
+                break
 
-    except Exception as e:
-        print(f"Error fetching or decoding frame: {e}")
-        continue
+        except Exception as e:
+            print(f"Error processing frame: {e}")
+            continue
 
-cv2.destroyAllWindows()
+finally:
+    GPIO.cleanup()
+    cv2.destroyAllWindows()
+    print("GPIO cleaned up.")

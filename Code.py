@@ -90,7 +90,7 @@ def set_servo_angle4(angle):
 
 # Initialize variables
 keyboard = np.zeros((600, 1000, 3), np.uint8)
-url = 'http://192.168.98.171/cam-lo.jpg'
+url = 'http://192.168.72.171/cam-lo.jpg'
 cv2.namedWindow("live Cam Testing", cv2.WINDOW_AUTOSIZE)
 
 # Create VideoCapture object (though not used directly here)
@@ -170,12 +170,6 @@ def get_blinking_ratio(eye_points, facial_landmarks):
     ear = (A + B) / (2.0 * C)
     return ear
 
-
-
-
-
-
-
 # Main loop
 try:
     while True:
@@ -200,6 +194,10 @@ try:
                 left_eye_ratio = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
                 right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
                 blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
+
+                # Draw contours around the eyes
+                cv2.polylines(img, [left_eye], True, (0, 0, 255), 2)
+                cv2.polylines(img, [right_eye], True, (0, 0, 255), 2)   
 
                 gaze_ratio_left_eye = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks)
                 gaze_ratio_right_eye = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks)

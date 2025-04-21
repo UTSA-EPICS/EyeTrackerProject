@@ -3,6 +3,8 @@
 ## 🔍 Overview  
 This branch is dedicated to **Eye Tracker Development**.
 
+**Disclaimer:** This software is intended for research/educational use. It does not contain or process personal medical data.
+
 ---
 
 ## 👁️ Main Eye Tracker Setup Instructions

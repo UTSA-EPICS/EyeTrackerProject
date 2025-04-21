@@ -5,6 +5,8 @@ This branch is for the **Eye Tracker Demonstration**, which uses:
 - An **ESP32-CAM** for remote video streaming  
 - An **Arduino** for controlling **servo motors** and **LED indicators**
 
+**Disclaimer:** This software is intended for research/educational use. It does not contain or process personal medical data.
+
 ---
 
 ## 📷 ESP32 Setup Instructions
